@@ -1,4 +1,18 @@
 services:
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/goose.Dockerfile
+    profiles:
+      - tools
+    depends_on:
+      - db
+    environment:
+      GOOSE_DRIVER: postgres
+      GOOSE_DBSTRING: "postgres://products:products@db:5432/products?sslmode=disable"
+      GOOSE_MIGRATION_DIR: /migrations
+    volumes:
+      - ./database/migrations:/migrations
   db:
     image: postgres:17
     restart: unless-stopped

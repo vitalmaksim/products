@@ -24,6 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("cannot connect to psql %v", err)
 	}
+	defer pool.Close()
 
 	err = pool.Ping(ctx)
 	if err != nil {
