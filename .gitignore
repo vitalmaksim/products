@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Build
+/bin/
+/dist/
+*.test
+
+# Coverage and profiling
+coverage.out
+*.prof
+
