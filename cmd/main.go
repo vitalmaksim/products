@@ -37,10 +37,15 @@ func main() {
 	balanceService := service.NewBalanceService(userRepository)
 	balanceHandler := handler.NewBalanceHandler(balanceService)
 
+	productRepository := repository.NewProductRepository(pool)
+	catalogService := service.NewCatalogService(productRepository)
+	catalogHandler := handler.NewCatalogHandler(catalogService)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /health", handler.Health)
 	mux.HandleFunc("GET /balance", balanceHandler.GetBalance)
+	mux.HandleFunc("GET /products", catalogHandler.GetProducts)
 
 	err = http.ListenAndServe(cfg.HTTPAddr, mux)
 	if err != nil {

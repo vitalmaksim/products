@@ -2,7 +2,10 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -12,6 +15,10 @@ type Config struct {
 }
 
 func Load() (Config, error) {
+	if err := godotenv.Load(); err != nil {
+		log.Printf(".env не загружен: %v", err)
+	}
+
 	cfg := Config{
 		HTTPAddr:    os.Getenv("HTTP_ADDR"),
 		DatabaseURL: os.Getenv("DATABASE_URL"),

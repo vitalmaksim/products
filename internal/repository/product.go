@@ -17,7 +17,7 @@ func NewProductRepository(pool *pgxpool.Pool) *ProductRepository {
 }
 
 func (r *ProductRepository) GetProducts(ctx context.Context, limit, offset int) ([]model.Product, error) {
-	const query = "SELECT * FROM products LIMIT $1 OFFSET $2"
+	const query = "SELECT * FROM products ORDER BY id LIMIT $1 OFFSET $2"
 
 	var products []model.Product
 	rows, err := r.pool.Query(ctx, query, limit, offset)
