@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/vitalmaksim/products/internal/handler"
@@ -14,5 +15,8 @@ func main() {
 
 	mux.HandleFunc("GET /health", handler.Health)
 
-	http.ListenAndServe(":8081", mux)
+	err := http.ListenAndServe(":8081", mux)
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
 }
