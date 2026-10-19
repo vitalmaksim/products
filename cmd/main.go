@@ -9,6 +9,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/vitalmaksim/products/internal/config"
 	"github.com/vitalmaksim/products/internal/handler"
+	"github.com/vitalmaksim/products/internal/repository"
+	"github.com/vitalmaksim/products/internal/service"
 )
 
 func main() {
@@ -31,9 +33,14 @@ func main() {
 		log.Fatalf("unable to ping psql %v", err)
 	}
 
+	userRepository := repository.NewUserRepository(pool)
+	balanceService := service.NewBalanceService(userRepository)
+	balanceHandler := handler.NewBalanceHandler(balanceService)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /health", handler.Health)
+	mux.HandleFunc("GET /balance", balanceHandler.GetBalance)
 
 	err = http.ListenAndServe(cfg.HTTPAddr, mux)
 	if err != nil {

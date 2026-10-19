@@ -1,10 +1,13 @@
 package handler
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/vitalmaksim/products/internal/httpx"
+)
 
 func Health(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	w.Write([]byte(`{"status": "health"}`))
+	httpx.JSON(w, http.StatusOK, map[string]string{
+		"status": "health",
+	})
 }
