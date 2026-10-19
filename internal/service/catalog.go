@@ -20,7 +20,7 @@ func NewCatalogService(productRepository ProductRepository) *CatalogService {
 }
 
 func (s *CatalogService) GetProducts(ctx context.Context, page, limit int) ([]model.Product, error) {
-	offset := limit * page
+	offset := limit * (page - 1)
 
 	products, err := s.productRepository.GetProducts(ctx, limit, offset)
 	if err != nil {

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/vitalmaksim/products/internal/httpx"
@@ -30,6 +31,8 @@ func (h *CatalogHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.catalogService.GetProducts(r.Context(), page, limit)
 	if err != nil {
+		log.Printf("%v", err)
+
 		httpx.Error(w, http.StatusInternalServerError, "internal server error")
 		return
 	}

@@ -11,6 +11,7 @@ import (
 	"github.com/vitalmaksim/products/internal/handler"
 	"github.com/vitalmaksim/products/internal/repository"
 	"github.com/vitalmaksim/products/internal/service"
+	"github.com/vitalmaksim/products/internal/supplier"
 )
 
 func main() {
@@ -40,6 +41,12 @@ func main() {
 	productRepository := repository.NewProductRepository(pool)
 	catalogService := service.NewCatalogService(productRepository)
 	catalogHandler := handler.NewCatalogHandler(catalogService)
+
+	httpClient := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	supplierClient := supplier.NewClient(httpClient, cfg.SupplierAPI)
 
 	mux := http.NewServeMux()
 
