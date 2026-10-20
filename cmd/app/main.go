@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"sync"
 	"time"
-
-	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -38,8 +36,6 @@ func process(ctx context.Context, id int, failOn int) (Result, error) {
 
 // Запускает Worker Pool и возвращает результаты.
 func run(ctx context.Context, totalJobs int, workerCount int, failOn int) ([]Result, error) {
-	group, groupCtx := errgroup.WithContext(ctx)
-
 	jobs := make(chan int)
 	results := make(chan Result)
 

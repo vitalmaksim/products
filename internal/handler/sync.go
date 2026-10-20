@@ -26,7 +26,7 @@ func (h *SyncHandler) StartSync(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, service.ErrSyncAlreadyRunning):
 			httpx.Error(w, http.StatusConflict, "sync already running")
-		case errors.Is(err, context.Canceled), errors.Is(err, context.DeadlineExceeded):
+		case errors.Is(err, service.ErrSyncShuttingDown), errors.Is(err, context.Canceled), errors.Is(err, context.DeadlineExceeded):
 			httpx.Error(w, http.StatusServiceUnavailable, "sync unavailable")
 		default:
 			log.Printf("start sync: %v", err)
