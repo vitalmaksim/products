@@ -12,6 +12,7 @@ import (
 	"github.com/vitalmaksim/products/internal/repository"
 	"github.com/vitalmaksim/products/internal/service"
 	"github.com/vitalmaksim/products/internal/supplier"
+	"golang.org/x/time/rate"
 )
 
 func main() {
@@ -50,7 +51,9 @@ func main() {
 		Timeout: 10 * time.Second,
 	}
 
-	supplierClient := supplier.NewClient(httpClient, cfg.SupplierAPI)
+	// Один лимит на поставщика, а не на воркера; запас в один токен исключает стартовый всплеск.
+	supplierLimiter := rate.NewLimiter(rate.Limit(5), 1)
+	supplierClient := supplier.NewClient(httpClient, cfg.SupplierAPI, supplierLimiter)
 	syncService := service.NewSyncService(supplierClient, productRepository)
 	syncManager := service.NewSyncManager(syncService)
 	syncHandler := handler.NewSyncHandler(syncManager, appContext)

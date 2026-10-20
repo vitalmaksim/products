@@ -7,15 +7,18 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"golang.org/x/time/rate"
 )
 
 type Client struct {
 	httpClient *http.Client
 	baseURL    string
+	limiter    *rate.Limiter
 }
 
-func NewClient(client *http.Client, baseURL string) *Client {
-	return &Client{httpClient: client, baseURL: baseURL}
+func NewClient(client *http.Client, baseURL string, limiter *rate.Limiter) *Client {
+	return &Client{httpClient: client, baseURL: baseURL, limiter: limiter}
 }
 
 func (c *Client) GetProducts(ctx context.Context, page int) (ProductsResponse, error) {
@@ -32,6 +35,11 @@ func (c *Client) GetProducts(ctx context.Context, page int) (ProductsResponse, e
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
 		return ProductsResponse{}, fmt.Errorf("create supplier request: %w", err)
+	}
+
+	// Все воркеры ждут один лимитер; отмена синхронизации прерывает и это ожидание.
+	if err := c.limiter.Wait(ctx); err != nil {
+		return ProductsResponse{}, fmt.Errorf("wait supplier rate limit: %w", err)
 	}
 
 	resp, err := c.httpClient.Do(req)
