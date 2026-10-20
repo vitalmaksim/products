@@ -44,9 +44,13 @@ func (h *PurchaseHandler) CreatePurchase(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	purchase, err := h.purchaseService.CreatePurchase(r.Context(), userID, request.ProductID)
+	purchase, created, err := h.purchaseService.CreatePurchase(r.Context(), userID, request.ProductID, r.Header.Get("Idempotency-Key"))
 	if err != nil {
 		switch {
+		case errors.Is(err, model.ErrInvalidIdempotencyKey):
+			httpx.Error(w, http.StatusBadRequest, "idempotency key must contain 1 to 128 characters")
+		case errors.Is(err, model.ErrIdempotencyConflict):
+			httpx.Error(w, http.StatusConflict, "idempotency key used for another product")
 		case errors.Is(err, model.ErrInvalidUserID), errors.Is(err, model.ErrInvalidProductID):
 			httpx.Error(w, http.StatusBadRequest, "invalid user id or product id")
 		case errors.Is(err, model.ErrUserNotFound):
@@ -63,5 +67,9 @@ func (h *PurchaseHandler) CreatePurchase(w http.ResponseWriter, r *http.Request)
 		}
 		return
 	}
-	httpx.JSON(w, http.StatusCreated, purchase)
+	status := http.StatusOK
+	if created {
+		status = http.StatusCreated
+	}
+	httpx.JSON(w, status, purchase)
 }
