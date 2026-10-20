@@ -20,7 +20,11 @@ func main() {
 		log.Fatalf("config %v", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// Время подключения к БД не должно ограничивать жизнь фоновой синхронизации.
+	appContext, cancelApp := context.WithCancel(context.Background())
+	defer cancelApp()
+
+	ctx, cancel := context.WithTimeout(appContext, 5*time.Second)
 	defer cancel()
 
 	pool, err := pgxpool.New(ctx, cfg.DatabaseURL)
@@ -47,12 +51,17 @@ func main() {
 	}
 
 	supplierClient := supplier.NewClient(httpClient, cfg.SupplierAPI)
+	syncService := service.NewSyncService(supplierClient, productRepository)
+	syncManager := service.NewSyncManager(syncService)
+	syncHandler := handler.NewSyncHandler(syncManager, appContext)
 
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /health", handler.Health)
 	mux.HandleFunc("GET /balance", balanceHandler.GetBalance)
 	mux.HandleFunc("GET /products", catalogHandler.GetProducts)
+	mux.HandleFunc("POST /sync", syncHandler.StartSync)
+	mux.HandleFunc("GET /sync/status", syncHandler.GetStatus)
 
 	err = http.ListenAndServe(cfg.HTTPAddr, mux)
 	if err != nil {
