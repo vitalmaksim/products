@@ -47,6 +47,10 @@ func main() {
 	catalogService := service.NewCatalogService(productRepository)
 	catalogHandler := handler.NewCatalogHandler(catalogService)
 
+	purchaseRepository := repository.NewPurchaseRepository(pool)
+	purchaseService := service.NewPurchaseService(purchaseRepository)
+	purchaseHandler := handler.NewPurchaseHandler(purchaseService)
+
 	httpClient := &http.Client{
 		Timeout: 10 * time.Second,
 	}
@@ -63,6 +67,7 @@ func main() {
 	mux.HandleFunc("GET /health", handler.Health)
 	mux.HandleFunc("GET /balance", balanceHandler.GetBalance)
 	mux.HandleFunc("GET /products", catalogHandler.GetProducts)
+	mux.HandleFunc("POST /purchases", purchaseHandler.CreatePurchase)
 	mux.HandleFunc("POST /sync", syncHandler.StartSync)
 	mux.HandleFunc("GET /sync/status", syncHandler.GetStatus)
 
